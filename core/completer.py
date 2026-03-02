@@ -88,34 +88,37 @@ class PyBashCompleter(Completer):
         text = document.text_before_cursor
         word_before = document.get_word_before_cursor()
         
-        # 1. Nested Completions
+        # 1. Nested Completions (Subcommands)
         try:
             yield from self.nested_completer.get_completions(document, complete_event)
         except: pass
 
-        # 2. Command completions (only for the first word)
+        # 2. Command Completions
         if " " not in text.strip() or (text.strip() == word_before and word_before):
             builtins = self.get_builtins()
             
-            # Check if matching a builtin that starts with /
-            is_slash_builtin = False
+            # Special handling for /commands
+            if word_before.startswith("/"):
+                # Only show builtins starting with /
+                for cmd in builtins:
+                    if cmd.startswith(word_before):
+                        yield Completion(cmd, start_position=-len(word_before))
+                return # STOP here! Do not scan system commands or paths for /
+
+            # Normal commands
             for cmd in builtins:
                 if cmd.startswith(word_before):
                     yield Completion(cmd, start_position=-len(word_before))
-                    if cmd.startswith("/"): is_slash_builtin = True
             
             cmds = list(self._cache_commands)
             for cmd in cmds:
                 if cmd.startswith(word_before.lower()):
                     yield Completion(cmd, start_position=-len(word_before))
 
-            # Only yield paths if we aren't matching a /command builtin
-            # This fixes /settings showing C:/ contents
-            if not is_slash_builtin:
-                if word_before.startswith(".") or "/" in word_before or "\\" in word_before:
-                    yield from self.path_completer.get_completions(document, complete_event)
+            if word_before.startswith(".") or "/" in word_before or "\\" in word_before:
+                yield from self.path_completer.get_completions(document, complete_event)
 
-        # 3. Path Fallback
+        # 3. Path Fallback (Arguments)
         else:
             first_word = text.split()[0]
             if first_word not in self.nested_dict:
