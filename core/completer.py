@@ -88,34 +88,37 @@ class PyBashCompleter(Completer):
         text = document.text_before_cursor
         word_before = document.get_word_before_cursor()
         
-        # 1. Nested Completions (Subcommands)
+        # 1. Nested Completions
         try:
             yield from self.nested_completer.get_completions(document, complete_event)
         except: pass
 
         # 2. Command Completions
-        if " " not in text.strip() or (text.strip() == word_before and word_before):
+        # Check if we are typing the first word (ignoring leading spaces)
+        if " " not in text.strip():
+            str_text = text.strip()
             builtins = self.get_builtins()
             
             # Special handling for /commands
-            if word_before.startswith("/"):
+            if str_text.startswith("/"):
                 # Only show builtins starting with /
                 for cmd in builtins:
-                    if cmd.startswith(word_before):
-                        yield Completion(cmd, start_position=-len(word_before))
-                return # STOP here! Do not scan system commands or paths for /
+                    if cmd.startswith(str_text):
+                        yield Completion(cmd, start_position=-len(str_text))
+                return # STRICT STOP: Do not fall through to system commands or paths
 
-            # Normal commands
+            # Normal commands (non-slash)
             for cmd in builtins:
-                if cmd.startswith(word_before):
-                    yield Completion(cmd, start_position=-len(word_before))
+                if cmd.startswith(str_text):
+                    yield Completion(cmd, start_position=-len(str_text))
             
             cmds = list(self._cache_commands)
             for cmd in cmds:
-                if cmd.startswith(word_before.lower()):
-                    yield Completion(cmd, start_position=-len(word_before))
+                if cmd.startswith(str_text.lower()):
+                    yield Completion(cmd, start_position=-len(str_text))
 
-            if word_before.startswith(".") or "/" in word_before or "\\" in word_before:
+            # Path completion for ./ or / paths
+            if str_text.startswith(".") or "/" in str_text or "\\" in str_text:
                 yield from self.path_completer.get_completions(document, complete_event)
 
         # 3. Path Fallback (Arguments)
