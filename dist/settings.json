@@ -1,0 +1,21 @@
+{
+    "history_limit": 1000,
+    "show_welcome": true,
+    "show_dev_logs": false,
+    "use_slash_paths": true,
+    "autocomplete_mode": "ghost",
+    "welcome_message": "<ansigreen>Welcome back, {user}!</ansigreen>\n<style fg='#888888'>OS: {os} | Python: {python_ver}</style>\n<style fg='#aaaaaa'>Last login: {last_login}</style>",
+    "ghost_text_color": "#888888",
+    "prompt_path_color": "ansicyan",
+    "prompt_git_color": "ansimagenta",
+    "prompt_venv_color": "ansiyellow",
+    "prompt_user_color": "ansigreen",
+    "prompt_symbol_color": "ansiwhite",
+    "last_run": "2026-03-02 12:50:29",
+    "ls_dir_color": "ansiblue",
+    "ls_file_color": "ansiwhite",
+    "ls_dir_bold": true,
+    "ls_file_bold": false,
+    "highlight_enabled": true,
+    "syntax_theme": "monokai"
+}
