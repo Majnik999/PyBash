@@ -7,22 +7,23 @@ import platform
 def build_portable():
     # Check for Mac flag
     target_mac = "--mac" in sys.argv
-    
-    # Platform detection
     host_os = platform.system()
-    print(f"[-] Running on {host_os}...")
+    
+    print(f"[-] Host OS: {host_os}")
 
     if target_mac:
-        print("[-] Target: macOS")
         if host_os == "Windows":
-            print("[!] WARNING: PyInstaller cannot cross-compile from Windows to macOS.")
-            print("    Please run this script on a Mac to generate a valid macOS binary.")
+            print("\n[!] CRITICAL ERROR: Cannot build macOS binary on Windows.")
+            print("    PyInstaller does not support cross-compilation.")
+            print("    -> Please copy this project to a Mac and run 'python build-portable.py --mac' there.")
+            return # Stop execution
+        print("[-] Target: macOS")
     
     # 1. Clean previous
     for folder in ["dist", "build"]:
         if os.path.exists(folder): shutil.rmtree(folder)
     
-    # 2. Determine separator for path (Host OS dependent)
+    # 2. Determine separator for path
     sep = ';' if os.name == 'nt' else ':'
     
     # 3. Determine Output Name
@@ -47,14 +48,16 @@ def build_portable():
         
         # Determine extension for report
         ext = ""
-        if os.name == 'nt' and not target_mac:
+        if os.name == 'nt':
             ext = ".exe"
         
-        print(f"\n[+] Portable build complete!")
-        print(f"[+] File: {os.path.abspath(f'dist/{output_name}{ext}')}")
+        final_path = os.path.abspath(f'dist/{output_name}{ext}')
         
-        if target_mac and host_os != "Windows":
-            print("[+] Note: You may need to run 'chmod +x' on the generated binary.")
+        print(f"\n[+] Portable build complete!")
+        print(f"[+] File: {final_path}")
+        
+        if host_os != "Windows":
+            print("[*] Tip: You may need to run 'chmod +x' on the generated file.")
 
     except Exception as e:
         print(f"[!] Build failed: {e}")
